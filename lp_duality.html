@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lan="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -525,6 +525,73 @@
   }
 
   .output-placeholder .ph-icon { font-size: 2rem; margin-bottom: 8px; }
+
+  /* ── DIMENSION SLIDERS ── */
+  .dim-slider-wrap {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  }
+  .dim-slider-wrap label {
+    font-family: 'DM Mono', monospace; font-size: 0.78rem;
+    color: var(--muted); min-width: 148px; flex-shrink: 0;
+  }
+  .dim-slider {
+    flex: 1; -webkit-appearance: none; appearance: none;
+    height: 4px; border-radius: 4px; outline: none; cursor: pointer;
+    background: linear-gradient(90deg, var(--accent) var(--pct,11%), var(--border) var(--pct,11%));
+    transition: background .15s;
+  }
+  .dim-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px;
+    border-radius: 50%; background: var(--accent);
+    border: 2px solid #fff; cursor: pointer;
+    box-shadow: 0 0 8px rgba(124,106,247,0.6);
+    transition: transform .15s;
+  }
+  .dim-slider::-webkit-slider-thumb:hover { transform: scale(1.25); }
+  .dim-slider::-moz-range-thumb {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--accent); border: 2px solid #fff; cursor: pointer;
+  }
+  .dim-val-badge {
+    min-width: 34px; text-align: center;
+    background: rgba(124,106,247,0.15);
+    border: 1px solid rgba(124,106,247,0.35);
+    border-radius: 6px; padding: 3px 8px;
+    font-family: 'DM Mono', monospace; font-size: 0.88rem;
+    color: var(--accent); font-weight: 500; flex-shrink: 0;
+  }
+
+  /* value-sliders for Healthcare & Energy */
+  .val-slider-wrap {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+  }
+  .val-slider-wrap label {
+    font-family: 'DM Mono', monospace; font-size: 0.75rem;
+    color: var(--muted); min-width: 130px; flex-shrink: 0;
+  }
+  .val-slider {
+    flex: 1; -webkit-appearance: none; appearance: none;
+    height: 4px; border-radius: 4px; outline: none; cursor: pointer;
+    background: linear-gradient(90deg, var(--accent2) var(--pct,50%), var(--border) var(--pct,50%));
+    transition: background .1s;
+  }
+  .val-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--accent2);
+    border: 2px solid #fff; cursor: pointer;
+    box-shadow: 0 0 6px rgba(247,162,106,0.6);
+    transition: transform .15s;
+  }
+  .val-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+  .val-slider::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent2); border: 2px solid #fff; cursor: pointer;
+  }
+  .val-badge {
+    min-width: 44px; text-align: right;
+    font-family: 'DM Mono', monospace; font-size: 0.82rem;
+    color: var(--accent2); font-weight: 500; flex-shrink: 0;
+  }
 </style>
 </head>
 <body>
@@ -593,36 +660,25 @@
   <div class="grid-2">
     <!-- Inputs -->
     <div>
+      <!-- Dimension sliders -->
       <div class="card" style="margin-bottom:16px">
-        <div class="card-title">Supply Nodes (warehouses)</div>
-        <div class="field"><label>Supply s₁ (units)</label><input type="number" id="tp-s1" value="120" min="1"></div>
-        <div class="field"><label>Supply s₂ (units)</label><input type="number" id="tp-s2" value="80" min="1"></div>
-      </div>
-
-      <div class="card" style="margin-bottom:16px">
-        <div class="card-title">Demand Nodes (cities)</div>
-        <div class="field"><label>Demand d₁</label><input type="number" id="tp-d1" value="70" min="1"></div>
-        <div class="field"><label>Demand d₂</label><input type="number" id="tp-d2" value="90" min="1"></div>
-        <div class="field"><label>Demand d₃</label><input type="number" id="tp-d3" value="40" min="1"></div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Cost Matrix cᵢⱼ (₹ per unit)</div>
-        <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);margin-bottom:8px;">Row = warehouse, Col = city</div>
-        <div class="matrix-grid" id="tp-cost-matrix">
-          <div class="matrix-row">
-            <input class="matrix-cell" id="c11" type="number" value="4">
-            <input class="matrix-cell" id="c12" type="number" value="8">
-            <input class="matrix-cell" id="c13" type="number" value="1">
-          </div>
-          <div class="matrix-row">
-            <input class="matrix-cell" id="c21" type="number" value="7">
-            <input class="matrix-cell" id="c22" type="number" value="2">
-            <input class="matrix-cell" id="c23" type="number" value="3">
-          </div>
+        <div class="card-title">Problem Dimensions</div>
+        <div class="dim-slider-wrap">
+          <label>Supply Nodes (m)</label>
+          <input class="dim-slider" id="tp-m" type="range" min="1" max="10" value="2"
+            oninput="updateDimBadge('tp-m','tp-m-badge'); generateTransportInputs()">
+          <span class="dim-val-badge" id="tp-m-badge">2</span>
         </div>
-        <button class="btn btn-primary btn-full" onclick="solveTransport()">⚙ Solve Transport LP</button>
+        <div class="dim-slider-wrap" style="margin-bottom:0">
+          <label>Demand Nodes (n)</label>
+          <input class="dim-slider" id="tp-n" type="range" min="1" max="10" value="3"
+            oninput="updateDimBadge('tp-n','tp-n-badge'); generateTransportInputs()">
+          <span class="dim-val-badge" id="tp-n-badge">3</span>
+        </div>
       </div>
+
+      <!-- Dynamic supply / demand / cost cards -->
+      <div id="tp-dynamic-inputs"></div>
     </div>
 
     <!-- Results -->
@@ -690,9 +746,24 @@
     <div>
       <div class="card" style="margin-bottom:16px">
         <div class="card-title">Hospital Resources (capacity)</div>
-        <div class="field"><label>Doctors available</label><input type="number" id="h-docs" value="10" min="1"></div>
-        <div class="field"><label>Hospital beds</label><input type="number" id="h-beds" value="50" min="1"></div>
-        <div class="field"><label>Nurses available</label><input type="number" id="h-nurses" value="20" min="1"></div>
+        <div class="val-slider-wrap">
+          <label>Doctors available</label>
+          <input class="val-slider" id="h-docs" type="range" min="1" max="50" value="10"
+            oninput="updateValBadge('h-docs','h-docs-b'); solveHealthcare()">
+          <span class="val-badge" id="h-docs-b">10</span>
+        </div>
+        <div class="val-slider-wrap">
+          <label>Hospital beds</label>
+          <input class="val-slider" id="h-beds" type="range" min="1" max="200" value="50"
+            oninput="updateValBadge('h-beds','h-beds-b'); solveHealthcare()">
+          <span class="val-badge" id="h-beds-b">50</span>
+        </div>
+        <div class="val-slider-wrap" style="margin-bottom:0">
+          <label>Nurses available</label>
+          <input class="val-slider" id="h-nurses" type="range" min="1" max="100" value="20"
+            oninput="updateValBadge('h-nurses','h-nurses-b'); solveHealthcare()">
+          <span class="val-badge" id="h-nurses-b">20</span>
+        </div>
       </div>
 
       <div class="card">
@@ -702,19 +773,19 @@
         </div>
         <div class="matrix-grid">
           <div class="matrix-row">
-            <input class="matrix-cell" id="ha11" type="number" value="1" step="0.1">
-            <input class="matrix-cell" id="ha12" type="number" value="2" step="0.1">
-            <input class="matrix-cell" id="ha13" type="number" value="3" step="0.1">
+            <input class="matrix-cell" id="ha11" type="number" value="1" step="0.1" oninput="solveHealthcare()">
+            <input class="matrix-cell" id="ha12" type="number" value="2" step="0.1" oninput="solveHealthcare()">
+            <input class="matrix-cell" id="ha13" type="number" value="3" step="0.1" oninput="solveHealthcare()">
           </div>
           <div class="matrix-row">
-            <input class="matrix-cell" id="ha21" type="number" value="2" step="0.1">
-            <input class="matrix-cell" id="ha22" type="number" value="4" step="0.1">
-            <input class="matrix-cell" id="ha23" type="number" value="6" step="0.1">
+            <input class="matrix-cell" id="ha21" type="number" value="2" step="0.1" oninput="solveHealthcare()">
+            <input class="matrix-cell" id="ha22" type="number" value="4" step="0.1" oninput="solveHealthcare()">
+            <input class="matrix-cell" id="ha23" type="number" value="6" step="0.1" oninput="solveHealthcare()">
           </div>
           <div class="matrix-row">
-            <input class="matrix-cell" id="ha31" type="number" value="1" step="0.1">
-            <input class="matrix-cell" id="ha32" type="number" value="1" step="0.1">
-            <input class="matrix-cell" id="ha33" type="number" value="2" step="0.1">
+            <input class="matrix-cell" id="ha31" type="number" value="1" step="0.1" oninput="solveHealthcare()">
+            <input class="matrix-cell" id="ha32" type="number" value="1" step="0.1" oninput="solveHealthcare()">
+            <input class="matrix-cell" id="ha33" type="number" value="2" step="0.1" oninput="solveHealthcare()">
           </div>
         </div>
         <button class="btn btn-primary btn-full" onclick="solveHealthcare()">⚙ Solve Healthcare LP</button>
@@ -786,16 +857,46 @@
     <div>
       <div class="card" style="margin-bottom:16px">
         <div class="card-title">Power Plants (Generation Capacity MW)</div>
-        <div class="field"><label>Plant A — Solar (MW)</label><input type="number" id="e-g1" value="200" min="1"></div>
-        <div class="field"><label>Plant B — Thermal (MW)</label><input type="number" id="e-g2" value="300" min="1"></div>
-        <div class="field"><label>Plant C — Hydro (MW)</label><input type="number" id="e-g3" value="150" min="1"></div>
+        <div class="val-slider-wrap">
+          <label>Plant A — Solar (MW)</label>
+          <input class="val-slider" id="e-g1" type="range" min="10" max="600" value="200"
+            oninput="updateValBadge('e-g1','e-g1-b'); solveEnergy()">
+          <span class="val-badge" id="e-g1-b">200</span>
+        </div>
+        <div class="val-slider-wrap">
+          <label>Plant B — Thermal (MW)</label>
+          <input class="val-slider" id="e-g2" type="range" min="10" max="600" value="300"
+            oninput="updateValBadge('e-g2','e-g2-b'); solveEnergy()">
+          <span class="val-badge" id="e-g2-b">300</span>
+        </div>
+        <div class="val-slider-wrap" style="margin-bottom:0">
+          <label>Plant C — Hydro (MW)</label>
+          <input class="val-slider" id="e-g3" type="range" min="10" max="600" value="150"
+            oninput="updateValBadge('e-g3','e-g3-b'); solveEnergy()">
+          <span class="val-badge" id="e-g3-b">150</span>
+        </div>
       </div>
 
       <div class="card" style="margin-bottom:16px">
         <div class="card-title">City Demand (MW)</div>
-        <div class="field"><label>City 1 demand</label><input type="number" id="e-d1" value="180" min="1"></div>
-        <div class="field"><label>City 2 demand</label><input type="number" id="e-d2" value="210" min="1"></div>
-        <div class="field"><label>City 3 demand</label><input type="number" id="e-d3" value="150" min="1"></div>
+        <div class="val-slider-wrap">
+          <label>City 1 demand</label>
+          <input class="val-slider" id="e-d1" type="range" min="10" max="500" value="180"
+            oninput="updateValBadge('e-d1','e-d1-b'); solveEnergy()">
+          <span class="val-badge" id="e-d1-b">180</span>
+        </div>
+        <div class="val-slider-wrap">
+          <label>City 2 demand</label>
+          <input class="val-slider" id="e-d2" type="range" min="10" max="500" value="210"
+            oninput="updateValBadge('e-d2','e-d2-b'); solveEnergy()">
+          <span class="val-badge" id="e-d2-b">210</span>
+        </div>
+        <div class="val-slider-wrap" style="margin-bottom:0">
+          <label>City 3 demand</label>
+          <input class="val-slider" id="e-d3" type="range" min="10" max="500" value="150"
+            oninput="updateValBadge('e-d3','e-d3-b'); solveEnergy()">
+          <span class="val-badge" id="e-d3-b">150</span>
+        </div>
       </div>
 
       <div class="card">
@@ -803,19 +904,19 @@
         <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);margin-bottom:8px;">Rows=Plants, Cols=Cities</div>
         <div class="matrix-grid">
           <div class="matrix-row">
-            <input class="matrix-cell" id="ec11" type="number" value="2">
-            <input class="matrix-cell" id="ec12" type="number" value="3">
-            <input class="matrix-cell" id="ec13" type="number" value="1">
+            <input class="matrix-cell" id="ec11" type="number" value="2" oninput="solveEnergy()">
+            <input class="matrix-cell" id="ec12" type="number" value="3" oninput="solveEnergy()">
+            <input class="matrix-cell" id="ec13" type="number" value="1" oninput="solveEnergy()">
           </div>
           <div class="matrix-row">
-            <input class="matrix-cell" id="ec21" type="number" value="5">
-            <input class="matrix-cell" id="ec22" type="number" value="4">
-            <input class="matrix-cell" id="ec23" type="number" value="8">
+            <input class="matrix-cell" id="ec21" type="number" value="5" oninput="solveEnergy()">
+            <input class="matrix-cell" id="ec22" type="number" value="4" oninput="solveEnergy()">
+            <input class="matrix-cell" id="ec23" type="number" value="8" oninput="solveEnergy()">
           </div>
           <div class="matrix-row">
-            <input class="matrix-cell" id="ec31" type="number" value="3">
-            <input class="matrix-cell" id="ec32" type="number" value="6">
-            <input class="matrix-cell" id="ec33" type="number" value="2">
+            <input class="matrix-cell" id="ec31" type="number" value="3" oninput="solveEnergy()">
+            <input class="matrix-cell" id="ec32" type="number" value="6" oninput="solveEnergy()">
+            <input class="matrix-cell" id="ec33" type="number" value="2" oninput="solveEnergy()">
           </div>
         </div>
         <button class="btn btn-primary btn-full" onclick="solveEnergy()">⚙ Solve Energy LP</button>
@@ -870,19 +971,32 @@ function sensBar(label, pct, valStr) {
   </div>`;
 }
 
+/* ── Slider fill gradient helpers ── */
+function updateDimBadge(sliderId, badgeId) {
+  const sl = document.getElementById(sliderId);
+  const val = parseInt(sl.value);
+  document.getElementById(badgeId).textContent = val;
+  const pct = ((val - 1) / 9 * 100).toFixed(1) + '%';
+  sl.style.setProperty('--pct', pct);
+}
+
+function updateValBadge(sliderId, badgeId) {
+  const sl = document.getElementById(sliderId);
+  const val = parseInt(sl.value);
+  document.getElementById(badgeId).textContent = val;
+  const min = parseInt(sl.min), max = parseInt(sl.max);
+  const pct = ((val - min) / (max - min) * 100).toFixed(1) + '%';
+  sl.style.setProperty('--pct', pct);
+}
+
 /* ═══════════════════════════════════════════════════════
    SECTION NAVIGATION
 ═══════════════════════════════════════════════════════ */
 function showSection(name, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-'+name).classList.add('active');
-
-  // desktop pills
   document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
-  // mobile tabs
   document.querySelectorAll('.mobile-tab').forEach(p => p.classList.remove('active'));
-
-  // find all buttons with same onclick text
   document.querySelectorAll('.nav-pill, .mobile-tab').forEach(b => {
     if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'"+name+"'"))
       b.classList.add('active');
@@ -890,29 +1004,110 @@ function showSection(name, btn) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   TRANSPORT LP SOLVER
-   Uses the Vogel's Approximation + complementary slackness
-   to find dual variables (u_i, v_j)
+   TRANSPORT — DYNAMIC INPUT GENERATOR
+═══════════════════════════════════════════════════════ */
+const COST_DEFAULTS = [2,4,6,8,3,5,7,1,9,3,4,8,2,6,5,7,3,9,1,4,
+                       8,2,5,3,7,6,4,9,1,5,3,7,2,8,4,6,1,9,5,3,
+                       4,2,8,3,6,1,7,5,9,4,2,6,8,3,5,7,1,9,3,4,
+                       6,4,2,8,3,7,5,9,1,4,8,2,5,3,7,6,4,9,1,5,
+                       3,7,2,8,4,6,1,9,5,3,4,2,8,3,6,1,7,5,9,4];
+
+function generateTransportInputs() {
+  const m = parseInt(document.getElementById('tp-m').value);
+  const n = parseInt(document.getElementById('tp-n').value);
+  const container = document.getElementById('tp-dynamic-inputs');
+
+  // Supply default values spread nicely
+  const supplyDefaults = [120,80,100,60,90,70,110,50,85,95];
+  const demandDefaults = [70,90,40,60,80,50,100,30,75,55];
+
+  let html = '';
+
+  // Supply card
+  html += `<div class="card" style="margin-bottom:16px">
+    <div class="card-title">Supply Nodes (Warehouses)</div>`;
+  for (let i = 0; i < m; i++) {
+    const def = supplyDefaults[i] || 100;
+    const pct = ((def - 10) / 290 * 100).toFixed(1);
+    html += `<div class="val-slider-wrap">
+      <label>Supply s${i+1} (units)</label>
+      <input class="val-slider" id="tp-s${i}" type="range" min="10" max="300" value="${def}"
+        style="--pct:${pct}%"
+        oninput="updateValBadge('tp-s${i}','tp-s${i}-b'); solveTransport()">
+      <span class="val-badge" id="tp-s${i}-b">${def}</span>
+    </div>`;
+  }
+  html += `</div>`;
+
+  // Demand card
+  html += `<div class="card" style="margin-bottom:16px">
+    <div class="card-title">Demand Nodes (Cities)</div>`;
+  for (let j = 0; j < n; j++) {
+    const def = demandDefaults[j] || 70;
+    const pct = ((def - 10) / 290 * 100).toFixed(1);
+    html += `<div class="val-slider-wrap">
+      <label>Demand d${j+1}</label>
+      <input class="val-slider" id="tp-d${j}" type="range" min="10" max="300" value="${def}"
+        style="--pct:${pct}%"
+        oninput="updateValBadge('tp-d${j}','tp-d${j}-b'); solveTransport()">
+      <span class="val-badge" id="tp-d${j}-b">${def}</span>
+    </div>`;
+  }
+  html += `</div>`;
+
+  // Cost matrix card
+  html += `<div class="card">
+    <div class="card-title">Cost Matrix cᵢⱼ (₹ per unit)</div>
+    <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);margin-bottom:8px;">
+      Row = warehouse &nbsp;|&nbsp; Col = city
+    </div>
+    <div class="matrix-grid">`;
+  let di = 0;
+  for (let i = 0; i < m; i++) {
+    html += `<div class="matrix-row">`;
+    for (let j = 0; j < n; j++) {
+      const def = COST_DEFAULTS[di++ % COST_DEFAULTS.length];
+      html += `<input class="matrix-cell" id="tp-c-${i}-${j}" type="number" value="${def}"
+        oninput="solveTransport()">`;
+    }
+    html += `</div>`;
+  }
+  html += `</div>
+    <button class="btn btn-primary btn-full" onclick="solveTransport()">⚙ Solve Transport LP</button>
+  </div>`;
+
+  container.innerHTML = html;
+  solveTransport();
+}
+
+/* ═══════════════════════════════════════════════════════
+   TRANSPORT LP SOLVER  (dynamic m × n)
+   North-West Corner BFS + MODI dual variables
 ═══════════════════════════════════════════════════════ */
 function solveTransport() {
-  // Read inputs
-  const supply = [v('tp-s1'), v('tp-s2')];
-  const demand  = [v('tp-d1'), v('tp-d2'), v('tp-d3')];
-  const cost = [
-    [v('c11'), v('c12'), v('c13')],
-    [v('c21'), v('c22'), v('c23')]
-  ];
+  const m = parseInt(document.getElementById('tp-m').value);
+  const n = parseInt(document.getElementById('tp-n').value);
 
-  const m = supply.length, n = demand.length;
+  // Guard: inputs may not be rendered yet
+  if (!document.getElementById(`tp-s0`)) return;
 
-  // Check feasibility
+  const supply = Array.from({length:m}, (_,i) => v(`tp-s${i}`));
+  const demand  = Array.from({length:n}, (_,j) => v(`tp-d${j}`));
+  const cost   = Array.from({length:m}, (_,i) =>
+    Array.from({length:n}, (_,j) => v(`tp-c-${i}-${j}`))
+  );
+
   const totalSupply = supply.reduce((a,b)=>a+b,0);
   const totalDemand = demand.reduce((a,b)=>a+b,0);
+
   if (totalSupply < totalDemand) {
     document.getElementById('tp-output').innerHTML =
       `<div class="status-bar" style="background:rgba(247,106,106,0.1);color:var(--danger);border:1px solid rgba(247,106,106,0.2)">
-        ⚠ Infeasible: Total supply (${totalSupply}) < total demand (${totalDemand})
+        ⚠ Infeasible: Total supply (${totalSupply}) &lt; total demand (${totalDemand})
       </div>`;
+    ['tp-shadow','tp-sensitivity'].forEach(id =>
+      document.getElementById(id).innerHTML =
+        `<div class="output-placeholder"><div class="ph-icon">⚠</div>Fix infeasibility first</div>`);
     return;
   }
 
@@ -928,8 +1123,7 @@ function solveTransport() {
     else j++;
   }
 
-  // ── Compute dual variables via MODI method ──
-  // u[0] = 0 (convention), then u[i] + v[j] = c[i][j] for basic cells
+  // ── MODI dual variables: u[i] + v[j] = c[i][j] for basic cells ──
   const u = Array(m).fill(null), vj = Array(n).fill(null);
   u[0] = 0;
   let changed = true;
@@ -942,19 +1136,12 @@ function solveTransport() {
       }
     }
   }
-  // Fill any nulls
   for (let r=0; r<m; r++) if (u[r]===null) u[r]=0;
   for (let c=0; c<n; c++) if (vj[c]===null) vj[c]=0;
 
-  // ── Total cost ──
+  // ── Total cost & dual objective ──
   let totalCost = 0;
   for (let r=0;r<m;r++) for (let c=0;c<n;c++) totalCost += alloc[r][c]*cost[r][c];
-
-  /* ── DUALITY INTERPRETATION ──
-     u[i] = shadow price of supply constraint i  (value of relaxing supply by 1 unit)
-     v[j] = shadow price of demand constraint j  (value of relaxing demand by 1 unit)
-     By strong duality: Primal* = Dual* (proven through complementary slackness)
-  */
   const dualObj = vj.reduce((a,x,j)=>a+x*demand[j],0) - u.reduce((a,x,i)=>a+x*supply[i],0);
 
   // ── Render allocation table ──
@@ -991,33 +1178,25 @@ function solveTransport() {
   for (const rd of routeData) {
     sensHTML += sensBar(rd.label, (rd.rc/maxRouteVal)*100, `₹${rd.rc}`);
   }
-  document.getElementById('tp-sensitivity').innerHTML = sensHTML;
+  document.getElementById('tp-sensitivity').innerHTML = sensHTML || '<div class="output-placeholder"><div class="ph-icon">📈</div>No active routes</div>';
 }
 
 /* ═══════════════════════════════════════════════════════
    HEALTHCARE LP SOLVER
-   Primal: Maximize Σ xⱼ  s.t. A x ≤ b, x ≥ 0
-   Dual:   Minimize b·y   s.t. Aᵀ y ≥ 1, y ≥ 0
-   Shadow price yᵢ = extra patients from adding 1 unit of resource i
 ═══════════════════════════════════════════════════════ */
 function solveHealthcare() {
-  const b = [v('h-docs'), v('h-beds'), v('h-nurses')]; // resource capacities
+  const b = [v('h-docs'), v('h-beds'), v('h-nurses')];
   const A = [
     [v('ha11'), v('ha12'), v('ha13')],
     [v('ha21'), v('ha22'), v('ha23')],
     [v('ha31'), v('ha32'), v('ha33')]
   ];
 
-  const m = b.length; // resources
-  const n = A[0].length; // patient types
+  const m = b.length;
+  const n = A[0].length;
   const patientTypes = ['General', 'Surgical', 'ICU'];
   const resourceNames = ['Doctors', 'Beds', 'Nurses'];
 
-  /* ── Greedy LP approximation (ratio-based allocation) ──
-     Score each patient type by resource efficiency: 1 patient / sum of resource usage
-     Allocate greedily until a resource binds.
-     This gives a near-optimal BFS for the simplified 3-resource LP.
-  */
   const efficiency = A[0].map((_,j) => {
     const totalUsage = A.reduce((s,row)=>s+row[j],0);
     return {j, eff: 1/totalUsage};
@@ -1027,7 +1206,6 @@ function solveHealthcare() {
   const bRemain = [...b];
 
   for (const {j} of efficiency) {
-    // How many of patient type j can we accommodate?
     let maxPat = Infinity;
     for (let i=0;i<m;i++) {
       if (A[i][j]>0) maxPat = Math.min(maxPat, bRemain[i]/A[i][j]);
@@ -1039,26 +1217,19 @@ function solveHealthcare() {
   }
 
   const totalPatients = x.reduce((a,b)=>a+b,0);
-  const usage = A.map((row,i) => row.reduce((s,aij,j)=>s+aij*x[j],0));
+  const usage = A.map((row) => row.reduce((s,aij,j)=>s+aij*x[j],0));
 
-  /* ── Compute dual variables (shadow prices) ──
-     For binding constraints: yᵢ ≈ 1 / (resource usage per patient at binding resource)
-     We use the simplified dual: yᵢ = (1/Aᵢⱼ*) where j* is the bottleneck patient type.
-     Strong duality check: b·y should ≈ total patients (primal obj value)
-  */
   const shadow = b.map((bi, i) => {
     const slack = bi - usage[i];
     if (slack < 0.01) {
-      // Binding: find the patient type most constrained by this resource
       const minEfficiency = Math.min(...A[i].filter(a=>a>0));
       return 1 / minEfficiency;
     }
-    return 0; // Non-binding → shadow price = 0 (complementary slackness)
+    return 0;
   });
 
   const dualObj = shadow.reduce((s,y,i)=>s+y*b[i],0);
 
-  // ── Render results ──
   let html = `<table class="result-table">
     <thead><tr><th>Patient Type</th><th>Allocated</th><th>Doctor hrs</th><th>Beds</th><th>Nurses</th></tr></thead><tbody>`;
   for (let j=0;j<n;j++) {
@@ -1073,27 +1244,20 @@ function solveHealthcare() {
   </div>`;
   document.getElementById('h-output').innerHTML = html;
 
-  // ── Shadow prices ──
   let spHTML = '<div style="margin-bottom:8px;font-family:\'DM Mono\',monospace;font-size:0.72rem;color:var(--muted)">yᵢ = patients gained per extra unit of resource i</div>';
   for (let i=0;i<m;i++) {
     const slack = b[i] - usage[i];
-    spHTML += shadowBadge(
-      resourceNames[i],
-      shadow[i],
-      'patients/unit',
-      slack < 0.01 ? '🔒 binding' : `slack=${slack.toFixed(1)}`
-    );
+    spHTML += shadowBadge(resourceNames[i], shadow[i], 'patients/unit',
+      slack < 0.01 ? '🔒 binding' : `slack=${slack.toFixed(1)}`);
   }
   spHTML += `<div class="status-bar status-info" style="margin-top:10px">
     💡 By duality: If we add 1 doctor, we gain ~${shadow[0].toFixed(2)} more patients
   </div>`;
   document.getElementById('h-shadow').innerHTML = spHTML;
 
-  // ── Binding constraints ──
   let bindHTML = '<table class="result-table"><thead><tr><th>Resource</th><th>Used</th><th>Cap</th><th>Slack</th><th>Status</th></tr></thead><tbody>';
   for (let i=0;i<m;i++) {
     const slack = b[i]-usage[i];
-    const pct = (usage[i]/b[i]*100).toFixed(0);
     const binding = slack < 0.01;
     bindHTML += `<tr>
       <td>${resourceNames[i]}</td>
@@ -1111,10 +1275,6 @@ function solveHealthcare() {
 
 /* ═══════════════════════════════════════════════════════
    ENERGY DISTRIBUTION SOLVER
-   Primal: Minimize Σ cᵢⱼ fᵢⱼ  (same structure as transport LP)
-   Dual: λⱼ = Locational Marginal Price (LMP) at city j
-         μᵢ = shadow price of generation cap at plant i
-   Interpretation: λⱼ − μᵢ ≤ cᵢⱼ, equality on used routes
 ═══════════════════════════════════════════════════════ */
 function solveEnergy() {
   const gen = [v('e-g1'), v('e-g2'), v('e-g3')];
@@ -1131,7 +1291,7 @@ function solveEnergy() {
   if (totalGen < totalDem) {
     document.getElementById('e-output').innerHTML =
       `<div class="status-bar" style="background:rgba(247,106,106,0.1);color:var(--danger);border:1px solid rgba(247,106,106,0.2)">
-        ⚠ Infeasible: Generation (${totalGen} MW) < Demand (${totalDem} MW)
+        ⚠ Infeasible: Generation (${totalGen} MW) &lt; Demand (${totalDem} MW)
       </div>`;
     return;
   }
@@ -1140,7 +1300,6 @@ function solveEnergy() {
   const plantNames = ['Solar A','Thermal B','Hydro C'];
   const cityNames  = ['City 1','City 2','City 3'];
 
-  // Use same transport solver logic (min cost flow = transport LP)
   let gen_ = [...gen], dem_ = [...dem];
   const flow = Array.from({length:m},()=>Array(n).fill(0));
   let gi=0, dj=0;
@@ -1151,7 +1310,6 @@ function solveEnergy() {
     if (gen_[gi]===0) gi++; else dj++;
   }
 
-  // Dual via MODI
   const mu = Array(m).fill(null), lam = Array(n).fill(null);
   mu[0] = 0;
   let changed=true;
@@ -1159,7 +1317,6 @@ function solveEnergy() {
     changed=false;
     for(let r=0;r<m;r++) for(let c=0;c<n;c++){
       if(flow[r][c]>0){
-        // λⱼ − μᵢ = cᵢⱼ on used routes (complementary slackness)
         if(mu[r]!==null && lam[c]===null){ lam[c]=cost[r][c]+mu[r]; changed=true; }
         if(lam[c]!==null && mu[r]===null){ mu[r]=lam[c]-cost[r][c]; changed=true; }
       }
@@ -1171,7 +1328,6 @@ function solveEnergy() {
   let totalCost = 0;
   for(let r=0;r<m;r++) for(let c=0;c<n;c++) totalCost+=flow[r][c]*cost[r][c];
 
-  // ── Render flow table ──
   let html = `<table class="result-table">
     <thead><tr><th>Route</th><th>Flow (MW)</th><th>Cost/MW</th><th>Total Cost</th></tr></thead><tbody>`;
   const routeArr = [];
@@ -1193,7 +1349,6 @@ function solveEnergy() {
   html += `<div class="status-bar status-ok">✓ All demand nodes satisfied · Strong Duality holds</div>`;
   document.getElementById('e-output').innerHTML = html;
 
-  // ── LMPs (λ, μ) ──
   let spHTML = '<div style="margin-bottom:8px;font-family:\'DM Mono\',monospace;font-size:0.72rem;color:var(--muted)">λⱼ = LMP: marginal cost of 1 extra MW at city j</div>';
   for(let c=0;c<n;c++)
     spHTML += shadowBadge(`${cityNames[c]} λ${c+1}`, lam[c], '₹/MW', lam[c]>4?'expensive':'cheap');
@@ -1205,16 +1360,33 @@ function solveEnergy() {
   </div>`;
   document.getElementById('e-shadow').innerHTML = spHTML;
 
-  // ── Route comparison bars ──
   let rHTML = '';
   for(const rd of routeArr)
     rHTML += sensBar(rd.label, (rd.cost/maxCost)*100, `₹${rd.cost} (${rd.flow}MW)`);
   document.getElementById('e-routes').innerHTML = rHTML || '<div class="output-placeholder">No active routes</div>';
 }
 
-// Auto-solve on load so first view has data
+/* ═══════════════════════════════════════════════════════
+   INIT — set initial slider fill % and generate transport inputs
+═══════════════════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', () => {
-  solveTransport();
+  // Init dimension slider badges & fills
+  updateDimBadge('tp-m', 'tp-m-badge');
+  updateDimBadge('tp-n', 'tp-n-badge');
+
+  // Init healthcare value slider fills
+  ['h-docs','h-beds','h-nurses'].forEach(id => {
+    const badge = id.replace('h-','h-') + '-b';
+    updateValBadge(id, id + '-b');
+  });
+
+  // Init energy slider fills
+  ['e-g1','e-g2','e-g3','e-d1','e-d2','e-d3'].forEach(id => {
+    updateValBadge(id, id + '-b');
+  });
+
+  // Generate transport inputs then solve all
+  generateTransportInputs();
   solveHealthcare();
   solveEnergy();
 });
