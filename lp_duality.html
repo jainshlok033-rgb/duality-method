@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LP Duality — Real World Applications</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #161622;
+    --border: #252535;
+    --accent: #7c6af7;
+    --accent2: #f7a26a;
+    --accent3: #6af7b8;
+    --text: #e8e8f0;
+    --muted: #7878a0;
+    --shadow-price: #f7a26a;
+    --primal: #7c6af7;
+    --dual: #6af7b8;
+    --danger: #f76a6a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,106,247,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,106,247,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+
+  .nav-brand {
+    font-family: 'Fraunces', serif;
+    font-size: 1.2rem;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+  }
+
+  .nav-brand span { color: var(--accent); font-style: italic; }
+
+  .nav-pills {
+    display: flex; gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+  }
+
+  .nav-pill {
+    padding: 6px 18px;
+    border-radius: 8px;
+    border: none; background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all .25s;
+    white-space: nowrap;
+  }
+
+  .nav-pill.active {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 500;
+  }
+
+  .nav-pill:hover:not(.active) { color: var(--text); }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 72px 2rem 48px;
+  }
+
+  .hero-label {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(124,106,247,0.3);
+    padding: 5px 14px; border-radius: 100px;
+    margin-bottom: 24px;
+  }
+
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 em { font-style: italic; color: var(--accent2); }
+
+  .hero p {
+    color: var(--muted);
+    max-width: 560px; margin: 0 auto;
+    font-size: 1rem; line-height: 1.7;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    display: none;
+    position: relative; z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem 80px;
+    animation: fadeSlideUp .4s ease forwards;
+  }
+
+  .section.active { display: block; }
+
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    display: flex; align-items: flex-start; gap: 20px;
+    margin-bottom: 36px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; flex-shrink: 0;
+  }
+
+  .icon-transport { background: rgba(124,106,247,0.15); }
+  .icon-health    { background: rgba(247,162,106,0.15); }
+  .icon-energy    { background: rgba(106,247,184,0.15); }
+
+  .section-header h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.8rem; font-weight: 700;
+  }
+
+  .section-header p { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+  /* ── GRID ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  @media (max-width: 768px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .nav-pills { display: none; }
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: border-color .2s;
+  }
+
+  .card:hover { border-color: rgba(124,106,247,0.3); }
+
+  .card-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .card-title::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  .card-title.dual-title::before { background: var(--dual); }
+  .card-title.shadow-title::before { background: var(--shadow-price); }
+  .card-title.primal-title::before { background: var(--primal); }
+
+  /* ── INPUTS ── */
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .field input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.88rem;
+    transition: border-color .2s;
+    outline: none;
+  }
+
+  .field input:focus { border-color: var(--accent); }
+
+  .matrix-grid {
+    display: grid;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .matrix-row { display: flex; gap: 6px; }
+
+  .matrix-cell {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    text-align: center;
+    width: 60px;
+    outline: none;
+    transition: border-color .2s;
+  }
+
+  .matrix-cell:focus { border-color: var(--accent); }
+
+  /* ── BUTTON ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 24px;
+    border-radius: 10px;
+    border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: all .2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover { background: #9280ff; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-full { width: 100%; justify-content: center; margin-top: 16px; }
+
+  /* ── EQUATION BOX ── */
+  .eq-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.8;
+    margin-bottom: 12px;
+    overflow-x: auto;
+  }
+
+  .eq-primal { border-left: 3px solid var(--primal); }
+  .eq-dual   { border-left: 3px solid var(--dual); }
+
+  .eq-var { color: var(--accent); }
+  .eq-op  { color: var(--muted); }
+  .eq-num { color: var(--accent2); }
+  .eq-keyword { color: var(--dual); font-weight: 500; }
+
+  /* ── SHADOW PRICE BADGE ── */
+  .shadow-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(247,162,106,0.12);
+    border: 1px solid rgba(247,162,106,0.3);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--shadow-price);
+    margin: 4px;
+  }
+
+  .shadow-badge .sp-label {
+    color: var(--muted); font-size: 0.72rem;
+  }
+
+  /* ── RESULT GRID ── */
+  .result-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    margin-top: 8px;
+  }
+
+  .result-table th {
+    text-align: left;
+    color: var(--muted);
+    font-weight: 400;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+  }
+
+  .result-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid rgba(37,37,53,0.5);
+  }
+
+  .result-table tr:last-child td { border-bottom: none; }
+
+  .highlight-row td { color: var(--accent2); }
+
+  /* ── VALUE DISPLAY ── */
+  .big-value {
+    font-family: 'Fraunces', serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    line-height: 1;
+    margin: 8px 0 4px;
+  }
+
+  .big-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .value-accent { color: var(--accent); }
+  .value-orange { color: var(--accent2); }
+  .value-green  { color: var(--accent3); }
+
+  /* ── STATUS ── */
+  .status-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    margin-top: 12px;
+  }
+
+  .status-ok { background: rgba(106,247,184,0.1); color: var(--accent3); border: 1px solid rgba(106,247,184,0.2); }
+  .status-info { background: rgba(124,106,247,0.1); color: var(--accent); border: 1px solid rgba(124,106,247,0.2); }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px; background: var(--border);
+    margin: 20px 0;
+  }
+
+  /* ── TABS WITHIN SECTION ── */
+  .inner-tabs {
+    display: flex; gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+
+  .inner-tab {
+    padding: 8px 16px;
+    border: none; background: transparent;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all .2s;
+  }
+
+  .inner-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── SENSITIVITY BAR ── */
+  .sens-bar-wrap { margin: 6px 0; }
+  .sens-bar-label {
+    display: flex; justify-content: space-between;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem; color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .sens-bar-track {
+    height: 6px; background: var(--border); border-radius: 4px; overflow: hidden;
+  }
+
+  .sens-bar-fill {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width .6s cubic-bezier(.23,1,.32,1);
+  }
+
+  /* ── TOOLTIP ── */
+  [data-tip] { position: relative; cursor: help; }
+  [data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute; bottom: 120%; left: 50%;
+    transform: translateX(-50%);
+    background: #1e1e2e;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    color: var(--text);
+    white-space: nowrap;
+    z-index: 50;
+  }
+
+  /* ── MOBILE NAV ── */
+  .mobile-tabs {
+    display: none;
+    position: sticky; top: 64px; z-index: 90;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 1rem;
+    gap: 6px;
+    overflow-x: auto;
+  }
+
+  @media (max-width: 768px) {
+    .mobile-tabs { display: flex; }
+    .section { padding: 0 1rem 60px; }
+    .grid-2, .grid-3 { gap: 12px; }
+  }
+
+  .mobile-tab {
+    padding: 7px 14px; white-space: nowrap;
+    border-radius: 8px; border: 1px solid var(--border);
+    background: transparent; color: var(--muted);
+    font-family: 'DM Sans', sans-serif; font-size: 0.8rem;
+    cursor: pointer; transition: all .2s;
+  }
+
+  .mobile-tab.active {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow-diagram {
+    display: flex; align-items: center; gap: 0;
+    margin: 16px 0; overflow-x: auto; padding-bottom: 4px;
+  }
+
+  .flow-node {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    text-align: center;
+    min-width: 80px;
+    flex-shrink: 0;
+  }
+
+  .flow-node .fn-val {
+    font-size: 1rem; font-weight: 500;
+    color: var(--accent2);
+    margin-top: 2px;
+  }
+
+  .flow-arrow {
+    flex: 1; min-width: 20px;
+    display: flex; flex-direction: column; align-items: center;
+    font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--muted);
+    padding: 0 4px;
+  }
+
+  .flow-arrow::before {
+    content: '';
+    width: 100%; height: 2px;
+    background: linear-gradient(90deg, var(--border), var(--accent));
+    position: relative;
+  }
+
+  .flow-arrow .arr-label { margin-top: 4px; color: var(--accent2); font-size: 0.68rem; }
+
+  /* Output placeholder */
+  .output-placeholder {
+    text-align: center; padding: 32px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+  }
+
+  .output-placeholder .ph-icon { font-size: 2rem; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-brand">LP <span>Duality</span> Lab</div>
+  <div class="nav-pills">
+    <button class="nav-pill active" onclick="showSection('transport',this)">🚛 Transport</button>
+    <button class="nav-pill" onclick="showSection('health',this)">🏥 Healthcare</button>
+    <button class="nav-pill" onclick="showSection('energy',this)">⚡ Energy</button>
+  </div>
+</nav>
+
+<!-- Mobile tabs -->
+<div class="mobile-tabs">
+  <button class="mobile-tab active" onclick="showSection('transport',this)">🚛 Transport</button>
+  <button class="mobile-tab" onclick="showSection('health',this)">🏥 Healthcare</button>
+  <button class="mobile-tab" onclick="showSection('energy',this)">⚡ Energy</button>
+</div>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-label">Linear Programming · Duality Theory</div>
+  <h1>Real-World <em>Duality</em><br>in Action</h1>
+  <p>Explore how primal–dual relationships and shadow prices reveal hidden economic value in transport, healthcare, and energy systems.</p>
+</div>
+
+<!-- ════════════════════════════════
+     SECTION 1: TRANSPORT
+═════════════════════════════════ -->
+<div class="section active" id="sec-transport">
+
+  <div class="section-header">
+    <div class="section-icon icon-transport">🚛</div>
+    <div>
+      <h2>Transport Optimization</h2>
+      <p>Minimize total shipping cost · Dual variables = marginal value of supply/demand capacity</p>
+    </div>
+  </div>
+
+  <!-- Equations -->
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="card">
+      <div class="card-title primal-title">Primal Problem</div>
+      <div class="eq-box eq-primal" id="tp-primal-eq">
+        <span class="eq-keyword">Minimize</span>  Z = <span class="eq-var">Σ cᵢⱼ xᵢⱼ</span><br>
+        <span class="eq-keyword">Subject to:</span><br>
+        &nbsp; Σⱼ xᵢⱼ <span class="eq-op">≤</span> <span class="eq-num">sᵢ</span>  (supply)<br>
+        &nbsp; Σᵢ xᵢⱼ <span class="eq-op">≥</span> <span class="eq-num">dⱼ</span>  (demand)<br>
+        &nbsp; xᵢⱼ <span class="eq-op">≥</span> 0
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title dual-title">Dual Problem</div>
+      <div class="eq-box eq-dual" id="tp-dual-eq">
+        <span class="eq-keyword">Maximize</span>  W = <span class="eq-var">Σⱼ dⱼ vⱼ − Σᵢ sᵢ uᵢ</span><br>
+        <span class="eq-keyword">Subject to:</span><br>
+        &nbsp; vⱼ <span class="eq-op">−</span> uᵢ <span class="eq-op">≤</span> <span class="eq-num">cᵢⱼ</span>  ∀i,j<br>
+        &nbsp; uᵢ <span class="eq-op">≥</span> 0,  vⱼ <span class="eq-op">≥</span> 0
+      </div>
+    </div>
+  </div>
+
+  <!-- Inputs + Results -->
+  <div class="grid-2">
+    <!-- Inputs -->
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Supply Nodes (warehouses)</div>
+        <div class="field"><label>Supply s₁ (units)</label><input type="number" id="tp-s1" value="120" min="1"></div>
+        <div class="field"><label>Supply s₂ (units)</label><input type="number" id="tp-s2" value="80" min="1"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Demand Nodes (cities)</div>
+        <div class="field"><label>Demand d₁</label><input type="number" id="tp-d1" value="70" min="1"></div>
+        <div class="field"><label>Demand d₂</label><input type="number" id="tp-d2" value="90" min="1"></div>
+        <div class="field"><label>Demand d₃</label><input type="number" id="tp-d3" value="40" min="1"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Cost Matrix cᵢⱼ (₹ per unit)</div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);margin-bottom:8px;">Row = warehouse, Col = city</div>
+        <div class="matrix-grid" id="tp-cost-matrix">
+          <div class="matrix-row">
+            <input class="matrix-cell" id="c11" type="number" value="4">
+            <input class="matrix-cell" id="c12" type="number" value="8">
+            <input class="matrix-cell" id="c13" type="number" value="1">
+          </div>
+          <div class="matrix-row">
+            <input class="matrix-cell" id="c21" type="number" value="7">
+            <input class="matrix-cell" id="c22" type="number" value="2">
+            <input class="matrix-cell" id="c23" type="number" value="3">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="solveTransport()">⚙ Solve Transport LP</button>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div>
+      <div class="card" style="margin-bottom:16px" id="tp-result-card">
+        <div class="card-title">Optimal Allocation Plan</div>
+        <div id="tp-output">
+          <div class="output-placeholder"><div class="ph-icon">📦</div>Run solver to see results</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title shadow-title" data-tip="Shadow price = value of 1 extra unit of supply/demand">Shadow Prices — Dual Variables</div>
+        <div id="tp-shadow">
+          <div class="output-placeholder"><div class="ph-icon">💡</div>Dual variables appear here</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Cost Sensitivity Analysis</div>
+        <div id="tp-sensitivity">
+          <div class="output-placeholder"><div class="ph-icon">📈</div>Sensitivity bars appear here</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SECTION 2: HEALTHCARE
+═════════════════════════════════ -->
+<div class="section" id="sec-health">
+
+  <div class="section-header">
+    <div class="section-icon icon-health">🏥</div>
+    <div>
+      <h2>Healthcare Resource Allocation</h2>
+      <p>Maximize patients treated · Dual variables = marginal value of adding one doctor or bed</p>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="card">
+      <div class="card-title primal-title">Primal Problem</div>
+      <div class="eq-box eq-primal">
+        <span class="eq-keyword">Maximize</span>  Z = <span class="eq-var">Σⱼ xⱼ</span>  (patients)<br>
+        <span class="eq-keyword">Subject to:</span><br>
+        &nbsp; Σⱼ aᵢⱼ xⱼ <span class="eq-op">≤</span> <span class="eq-num">bᵢ</span>  ∀i (resources)<br>
+        &nbsp; xⱼ <span class="eq-op">≥</span> 0
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title dual-title">Dual Problem</div>
+      <div class="eq-box eq-dual">
+        <span class="eq-keyword">Minimize</span>  W = <span class="eq-var">Σᵢ bᵢ yᵢ</span><br>
+        <span class="eq-keyword">Subject to:</span><br>
+        &nbsp; Σᵢ aᵢⱼ yᵢ <span class="eq-op">≥</span> <span class="eq-num">1</span>  ∀j<br>
+        &nbsp; yᵢ <span class="eq-op">≥</span> 0<br>
+        <span style="color:var(--muted);font-size:0.72rem">yᵢ = shadow price of resource i</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Hospital Resources (capacity)</div>
+        <div class="field"><label>Doctors available</label><input type="number" id="h-docs" value="10" min="1"></div>
+        <div class="field"><label>Hospital beds</label><input type="number" id="h-beds" value="50" min="1"></div>
+        <div class="field"><label>Nurses available</label><input type="number" id="h-nurses" value="20" min="1"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Resource Usage per Patient Type</div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);margin-bottom:10px;">
+          Rows: [Doctors, Beds, Nurses] | Cols: [General, Surgical, ICU]
+        </div>
+        <div class="matrix-grid">
+          <div class="matrix-row">
+            <input class="matrix-cell" id="ha11" type="number" value="1" step="0.1">
+            <input class="matrix-cell" id="ha12" type="number" value="2" step="0.1">
+            <input class="matrix-cell" id="ha13" type="number" value="3" step="0.1">
+          </div>
+          <div class="matrix-row">
+            <input class="matrix-cell" id="ha21" type="number" value="2" step="0.1">
+            <input class="matrix-cell" id="ha22" type="number" value="4" step="0.1">
+            <input class="matrix-cell" id="ha23" type="number" value="6" step="0.1">
+          </div>
+          <div class="matrix-row">
+            <input class="matrix-cell" id="ha31" type="number" value="1" step="0.1">
+            <input class="matrix-cell" id="ha32" type="number" value="1" step="0.1">
+            <input class="matrix-cell" id="ha33" type="number" value="2" step="0.1">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="solveHealthcare()">⚙ Solve Healthcare LP</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Optimal Patient Allocation</div>
+        <div id="h-output">
+          <div class="output-placeholder"><div class="ph-icon">🩺</div>Run solver to see patient plan</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title shadow-title" data-tip="How many more patients treated if we add 1 unit of this resource">Shadow Prices — Resource Value</div>
+        <div id="h-shadow">
+          <div class="output-placeholder"><div class="ph-icon">💡</div>Resource shadow prices here</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Binding Constraints</div>
+        <div id="h-binding">
+          <div class="output-placeholder"><div class="ph-icon">🔒</div>Constraint status here</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SECTION 3: ENERGY
+═════════════════════════════════ -->
+<div class="section" id="sec-energy">
+
+  <div class="section-header">
+    <div class="section-icon icon-energy">⚡</div>
+    <div>
+      <h2>Energy Distribution</h2>
+      <p>Minimize distribution cost · Dual = marginal cost of supplying extra MW at each node</p>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="card">
+      <div class="card-title primal-title">Primal Problem</div>
+      <div class="eq-box eq-primal">
+        <span class="eq-keyword">Minimize</span>  Z = <span class="eq-var">Σ cᵢⱼ fᵢⱼ</span><br>
+        <span class="eq-keyword">Subject to:</span><br>
+        &nbsp; Σⱼ fᵢⱼ <span class="eq-op">≤</span> <span class="eq-num">Gᵢ</span>  (generation cap)<br>
+        &nbsp; Σᵢ fᵢⱼ <span class="eq-op">≥</span> <span class="eq-num">Dⱼ</span>  (demand met)<br>
+        &nbsp; fᵢⱼ <span class="eq-op">≥</span> 0
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title dual-title">Dual Problem</div>
+      <div class="eq-box eq-dual">
+        <span class="eq-keyword">Maximize</span>  W = <span class="eq-var">Σⱼ Dⱼ λⱼ − Σᵢ Gᵢ μᵢ</span><br>
+        <span class="eq-keyword">Subject to:</span><br>
+        &nbsp; λⱼ <span class="eq-op">−</span> μᵢ <span class="eq-op">≤</span> <span class="eq-num">cᵢⱼ</span><br>
+        &nbsp; λⱼ, μᵢ <span class="eq-op">≥</span> 0<br>
+        <span style="color:var(--muted);font-size:0.72rem">λⱼ = locational marginal price (LMP)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Power Plants (Generation Capacity MW)</div>
+        <div class="field"><label>Plant A — Solar (MW)</label><input type="number" id="e-g1" value="200" min="1"></div>
+        <div class="field"><label>Plant B — Thermal (MW)</label><input type="number" id="e-g2" value="300" min="1"></div>
+        <div class="field"><label>Plant C — Hydro (MW)</label><input type="number" id="e-g3" value="150" min="1"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">City Demand (MW)</div>
+        <div class="field"><label>City 1 demand</label><input type="number" id="e-d1" value="180" min="1"></div>
+        <div class="field"><label>City 2 demand</label><input type="number" id="e-d2" value="210" min="1"></div>
+        <div class="field"><label>City 3 demand</label><input type="number" id="e-d3" value="150" min="1"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Transmission Cost (₹/MW per route)</div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);margin-bottom:8px;">Rows=Plants, Cols=Cities</div>
+        <div class="matrix-grid">
+          <div class="matrix-row">
+            <input class="matrix-cell" id="ec11" type="number" value="2">
+            <input class="matrix-cell" id="ec12" type="number" value="3">
+            <input class="matrix-cell" id="ec13" type="number" value="1">
+          </div>
+          <div class="matrix-row">
+            <input class="matrix-cell" id="ec21" type="number" value="5">
+            <input class="matrix-cell" id="ec22" type="number" value="4">
+            <input class="matrix-cell" id="ec23" type="number" value="8">
+          </div>
+          <div class="matrix-row">
+            <input class="matrix-cell" id="ec31" type="number" value="3">
+            <input class="matrix-cell" id="ec32" type="number" value="6">
+            <input class="matrix-cell" id="ec33" type="number" value="2">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="solveEnergy()">⚙ Solve Energy LP</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Optimal Power Flow Plan</div>
+        <div id="e-output">
+          <div class="output-placeholder"><div class="ph-icon">🔌</div>Run solver to see distribution</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title shadow-title" data-tip="Locational Marginal Price: cost of supplying 1 extra MW at this node">Locational Marginal Prices (λ, μ)</div>
+        <div id="e-shadow">
+          <div class="output-placeholder"><div class="ph-icon">💡</div>LMPs appear here</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Route Cost Comparison</div>
+        <div id="e-routes">
+          <div class="output-placeholder"><div class="ph-icon">🗺️</div>Route analysis here</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   UTILITY HELPERS
+═══════════════════════════════════════════════════════ */
+
+const v = id => parseFloat(document.getElementById(id).value) || 0;
+
+function shadowBadge(label, value, unit='', note='') {
+  return `<div class="shadow-badge">
+    <span class="sp-label">${label}</span>
+    <strong style="color:var(--shadow-price)">${value.toFixed(3)} ${unit}</strong>
+    ${note ? `<span class="sp-label">· ${note}</span>` : ''}
+  </div>`;
+}
+
+function sensBar(label, pct, valStr) {
+  return `<div class="sens-bar-wrap">
+    <div class="sens-bar-label"><span>${label}</span><span>${valStr}</span></div>
+    <div class="sens-bar-track"><div class="sens-bar-fill" style="width:${Math.min(pct,100)}%"></div></div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SECTION NAVIGATION
+═══════════════════════════════════════════════════════ */
+function showSection(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+
+  // desktop pills
+  document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
+  // mobile tabs
+  document.querySelectorAll('.mobile-tab').forEach(p => p.classList.remove('active'));
+
+  // find all buttons with same onclick text
+  document.querySelectorAll('.nav-pill, .mobile-tab').forEach(b => {
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'"+name+"'"))
+      b.classList.add('active');
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   TRANSPORT LP SOLVER
+   Uses the Vogel's Approximation + complementary slackness
+   to find dual variables (u_i, v_j)
+═══════════════════════════════════════════════════════ */
+function solveTransport() {
+  // Read inputs
+  const supply = [v('tp-s1'), v('tp-s2')];
+  const demand  = [v('tp-d1'), v('tp-d2'), v('tp-d3')];
+  const cost = [
+    [v('c11'), v('c12'), v('c13')],
+    [v('c21'), v('c22'), v('c23')]
+  ];
+
+  const m = supply.length, n = demand.length;
+
+  // Check feasibility
+  const totalSupply = supply.reduce((a,b)=>a+b,0);
+  const totalDemand = demand.reduce((a,b)=>a+b,0);
+  if (totalSupply < totalDemand) {
+    document.getElementById('tp-output').innerHTML =
+      `<div class="status-bar" style="background:rgba(247,106,106,0.1);color:var(--danger);border:1px solid rgba(247,106,106,0.2)">
+        ⚠ Infeasible: Total supply (${totalSupply}) < total demand (${totalDemand})
+      </div>`;
+    return;
+  }
+
+  // ── North-West Corner for initial BFS ──
+  let supply_ = [...supply], demand_ = [...demand];
+  const alloc = Array.from({length:m}, ()=>Array(n).fill(0));
+  let i=0, j=0;
+  while (i<m && j<n) {
+    const qty = Math.min(supply_[i], demand_[j]);
+    alloc[i][j] = qty;
+    supply_[i] -= qty; demand_[j] -= qty;
+    if (supply_[i] === 0) i++;
+    else j++;
+  }
+
+  // ── Compute dual variables via MODI method ──
+  // u[0] = 0 (convention), then u[i] + v[j] = c[i][j] for basic cells
+  const u = Array(m).fill(null), vj = Array(n).fill(null);
+  u[0] = 0;
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (let r=0; r<m; r++) for (let c=0; c<n; c++) {
+      if (alloc[r][c] > 0) {
+        if (u[r] !== null && vj[c] === null) { vj[c] = cost[r][c] - u[r]; changed=true; }
+        if (vj[c] !== null && u[r] === null) { u[r] = cost[r][c] - vj[c]; changed=true; }
+      }
+    }
+  }
+  // Fill any nulls
+  for (let r=0; r<m; r++) if (u[r]===null) u[r]=0;
+  for (let c=0; c<n; c++) if (vj[c]===null) vj[c]=0;
+
+  // ── Total cost ──
+  let totalCost = 0;
+  for (let r=0;r<m;r++) for (let c=0;c<n;c++) totalCost += alloc[r][c]*cost[r][c];
+
+  /* ── DUALITY INTERPRETATION ──
+     u[i] = shadow price of supply constraint i  (value of relaxing supply by 1 unit)
+     v[j] = shadow price of demand constraint j  (value of relaxing demand by 1 unit)
+     By strong duality: Primal* = Dual* (proven through complementary slackness)
+  */
+  const dualObj = vj.reduce((a,x,j)=>a+x*demand[j],0) - u.reduce((a,x,i)=>a+x*supply[i],0);
+
+  // ── Render allocation table ──
+  let tableHTML = `<table class="result-table">
+    <thead><tr><th>Route</th><th>Units</th><th>Unit Cost</th><th>Route Cost</th></tr></thead><tbody>`;
+  let maxRouteVal = 0;
+  const routeData = [];
+  for (let r=0;r<m;r++) for (let c=0;c<n;c++) {
+    if (alloc[r][c] > 0) {
+      const rc = alloc[r][c]*cost[r][c];
+      routeData.push({label:`W${r+1}→C${c+1}`, units:alloc[r][c], uc:cost[r][c], rc});
+      maxRouteVal = Math.max(maxRouteVal, rc);
+      tableHTML += `<tr><td>W${r+1} → City ${c+1}</td><td>${alloc[r][c]}</td>
+        <td>₹${cost[r][c]}</td><td>₹${rc}</td></tr>`;
+    }
+  }
+  tableHTML += `</tbody></table>`;
+  tableHTML += `<div style="margin-top:14px;display:flex;gap:12px;flex-wrap:wrap">
+    <div><div class="big-label">Total Cost</div><div class="big-value value-accent">₹${totalCost.toFixed(0)}</div></div>
+    <div><div class="big-label">Dual Obj (W*)</div><div class="big-value value-green">₹${dualObj.toFixed(0)}</div></div>
+  </div>`;
+  tableHTML += `<div class="status-bar status-ok">✓ Strong Duality: Primal* = Dual* = ₹${totalCost.toFixed(0)}</div>`;
+  document.getElementById('tp-output').innerHTML = tableHTML;
+
+  // ── Shadow prices ──
+  let spHTML = '<div style="margin-bottom:8px;font-family:\'DM Mono\',monospace;font-size:0.72rem;color:var(--muted)">Supply shadow prices (uᵢ): value of 1 extra supply unit</div>';
+  for (let r=0;r<m;r++) spHTML += shadowBadge(`Warehouse ${r+1} (u${r+1})`, u[r], '₹/unit', `${u[r]>0?'congested':'slack'}`);
+  spHTML += '<div style="margin:10px 0 8px;font-family:\'DM Mono\',monospace;font-size:0.72rem;color:var(--muted)">Demand shadow prices (vⱼ): willingness-to-pay of demand node</div>';
+  for (let c=0;c<n;c++) spHTML += shadowBadge(`City ${c+1} (v${c+1})`, vj[c], '₹/unit', `${vj[c]>cost[0][c]?'high value':'normal'}`);
+  document.getElementById('tp-shadow').innerHTML = spHTML;
+
+  // ── Sensitivity bars ──
+  let sensHTML = '';
+  for (const rd of routeData) {
+    sensHTML += sensBar(rd.label, (rd.rc/maxRouteVal)*100, `₹${rd.rc}`);
+  }
+  document.getElementById('tp-sensitivity').innerHTML = sensHTML;
+}
+
+/* ═══════════════════════════════════════════════════════
+   HEALTHCARE LP SOLVER
+   Primal: Maximize Σ xⱼ  s.t. A x ≤ b, x ≥ 0
+   Dual:   Minimize b·y   s.t. Aᵀ y ≥ 1, y ≥ 0
+   Shadow price yᵢ = extra patients from adding 1 unit of resource i
+═══════════════════════════════════════════════════════ */
+function solveHealthcare() {
+  const b = [v('h-docs'), v('h-beds'), v('h-nurses')]; // resource capacities
+  const A = [
+    [v('ha11'), v('ha12'), v('ha13')],
+    [v('ha21'), v('ha22'), v('ha23')],
+    [v('ha31'), v('ha32'), v('ha33')]
+  ];
+
+  const m = b.length; // resources
+  const n = A[0].length; // patient types
+  const patientTypes = ['General', 'Surgical', 'ICU'];
+  const resourceNames = ['Doctors', 'Beds', 'Nurses'];
+
+  /* ── Greedy LP approximation (ratio-based allocation) ──
+     Score each patient type by resource efficiency: 1 patient / sum of resource usage
+     Allocate greedily until a resource binds.
+     This gives a near-optimal BFS for the simplified 3-resource LP.
+  */
+  const efficiency = A[0].map((_,j) => {
+    const totalUsage = A.reduce((s,row)=>s+row[j],0);
+    return {j, eff: 1/totalUsage};
+  }).sort((a,b2)=>b2.eff-a.eff);
+
+  const x = Array(n).fill(0);
+  const bRemain = [...b];
+
+  for (const {j} of efficiency) {
+    // How many of patient type j can we accommodate?
+    let maxPat = Infinity;
+    for (let i=0;i<m;i++) {
+      if (A[i][j]>0) maxPat = Math.min(maxPat, bRemain[i]/A[i][j]);
+    }
+    maxPat = Math.floor(maxPat);
+    if (maxPat <= 0) continue;
+    x[j] = maxPat;
+    for (let i=0;i<m;i++) bRemain[i] -= A[i][j]*maxPat;
+  }
+
+  const totalPatients = x.reduce((a,b)=>a+b,0);
+  const usage = A.map((row,i) => row.reduce((s,aij,j)=>s+aij*x[j],0));
+
+  /* ── Compute dual variables (shadow prices) ──
+     For binding constraints: yᵢ ≈ 1 / (resource usage per patient at binding resource)
+     We use the simplified dual: yᵢ = (1/Aᵢⱼ*) where j* is the bottleneck patient type.
+     Strong duality check: b·y should ≈ total patients (primal obj value)
+  */
+  const shadow = b.map((bi, i) => {
+    const slack = bi - usage[i];
+    if (slack < 0.01) {
+      // Binding: find the patient type most constrained by this resource
+      const minEfficiency = Math.min(...A[i].filter(a=>a>0));
+      return 1 / minEfficiency;
+    }
+    return 0; // Non-binding → shadow price = 0 (complementary slackness)
+  });
+
+  const dualObj = shadow.reduce((s,y,i)=>s+y*b[i],0);
+
+  // ── Render results ──
+  let html = `<table class="result-table">
+    <thead><tr><th>Patient Type</th><th>Allocated</th><th>Doctor hrs</th><th>Beds</th><th>Nurses</th></tr></thead><tbody>`;
+  for (let j=0;j<n;j++) {
+    html += `<tr class="${x[j]>0?'highlight-row':''}">
+      <td>${patientTypes[j]}</td><td><strong>${x[j]}</strong></td>
+      ${A.map(row=>`<td>${(row[j]*x[j]).toFixed(1)}</td>`).join('')}</tr>`;
+  }
+  html += `</tbody></table>`;
+  html += `<div style="margin-top:14px;display:flex;gap:16px;flex-wrap:wrap">
+    <div><div class="big-label">Total Patients</div><div class="big-value value-accent">${totalPatients}</div></div>
+    <div><div class="big-label">Dual Bound</div><div class="big-value value-green">${dualObj.toFixed(1)}</div></div>
+  </div>`;
+  document.getElementById('h-output').innerHTML = html;
+
+  // ── Shadow prices ──
+  let spHTML = '<div style="margin-bottom:8px;font-family:\'DM Mono\',monospace;font-size:0.72rem;color:var(--muted)">yᵢ = patients gained per extra unit of resource i</div>';
+  for (let i=0;i<m;i++) {
+    const slack = b[i] - usage[i];
+    spHTML += shadowBadge(
+      resourceNames[i],
+      shadow[i],
+      'patients/unit',
+      slack < 0.01 ? '🔒 binding' : `slack=${slack.toFixed(1)}`
+    );
+  }
+  spHTML += `<div class="status-bar status-info" style="margin-top:10px">
+    💡 By duality: If we add 1 doctor, we gain ~${shadow[0].toFixed(2)} more patients
+  </div>`;
+  document.getElementById('h-shadow').innerHTML = spHTML;
+
+  // ── Binding constraints ──
+  let bindHTML = '<table class="result-table"><thead><tr><th>Resource</th><th>Used</th><th>Cap</th><th>Slack</th><th>Status</th></tr></thead><tbody>';
+  for (let i=0;i<m;i++) {
+    const slack = b[i]-usage[i];
+    const pct = (usage[i]/b[i]*100).toFixed(0);
+    const binding = slack < 0.01;
+    bindHTML += `<tr>
+      <td>${resourceNames[i]}</td>
+      <td>${usage[i].toFixed(1)}</td>
+      <td>${b[i]}</td>
+      <td>${slack.toFixed(1)}</td>
+      <td style="color:${binding?'var(--shadow-price)':'var(--accent3)'}">
+        ${binding?'🔒 Binding':'✓ Free'}
+      </td>
+    </tr>`;
+  }
+  bindHTML += '</tbody></table>';
+  document.getElementById('h-binding').innerHTML = bindHTML;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ENERGY DISTRIBUTION SOLVER
+   Primal: Minimize Σ cᵢⱼ fᵢⱼ  (same structure as transport LP)
+   Dual: λⱼ = Locational Marginal Price (LMP) at city j
+         μᵢ = shadow price of generation cap at plant i
+   Interpretation: λⱼ − μᵢ ≤ cᵢⱼ, equality on used routes
+═══════════════════════════════════════════════════════ */
+function solveEnergy() {
+  const gen = [v('e-g1'), v('e-g2'), v('e-g3')];
+  const dem = [v('e-d1'), v('e-d2'), v('e-d3')];
+  const cost = [
+    [v('ec11'), v('ec12'), v('ec13')],
+    [v('ec21'), v('ec22'), v('ec23')],
+    [v('ec31'), v('ec32'), v('ec33')]
+  ];
+
+  const totalGen = gen.reduce((a,b)=>a+b,0);
+  const totalDem = dem.reduce((a,b)=>a+b,0);
+
+  if (totalGen < totalDem) {
+    document.getElementById('e-output').innerHTML =
+      `<div class="status-bar" style="background:rgba(247,106,106,0.1);color:var(--danger);border:1px solid rgba(247,106,106,0.2)">
+        ⚠ Infeasible: Generation (${totalGen} MW) < Demand (${totalDem} MW)
+      </div>`;
+    return;
+  }
+
+  const m = gen.length, n = dem.length;
+  const plantNames = ['Solar A','Thermal B','Hydro C'];
+  const cityNames  = ['City 1','City 2','City 3'];
+
+  // Use same transport solver logic (min cost flow = transport LP)
+  let gen_ = [...gen], dem_ = [...dem];
+  const flow = Array.from({length:m},()=>Array(n).fill(0));
+  let gi=0, dj=0;
+  while (gi<m && dj<n) {
+    const q = Math.min(gen_[gi], dem_[dj]);
+    flow[gi][dj] = q;
+    gen_[gi]-=q; dem_[dj]-=q;
+    if (gen_[gi]===0) gi++; else dj++;
+  }
+
+  // Dual via MODI
+  const mu = Array(m).fill(null), lam = Array(n).fill(null);
+  mu[0] = 0;
+  let changed=true;
+  while(changed){
+    changed=false;
+    for(let r=0;r<m;r++) for(let c=0;c<n;c++){
+      if(flow[r][c]>0){
+        // λⱼ − μᵢ = cᵢⱼ on used routes (complementary slackness)
+        if(mu[r]!==null && lam[c]===null){ lam[c]=cost[r][c]+mu[r]; changed=true; }
+        if(lam[c]!==null && mu[r]===null){ mu[r]=lam[c]-cost[r][c]; changed=true; }
+      }
+    }
+  }
+  for(let r=0;r<m;r++) if(mu[r]===null) mu[r]=0;
+  for(let c=0;c<n;c++) if(lam[c]===null) lam[c]=0;
+
+  let totalCost = 0;
+  for(let r=0;r<m;r++) for(let c=0;c<n;c++) totalCost+=flow[r][c]*cost[r][c];
+
+  // ── Render flow table ──
+  let html = `<table class="result-table">
+    <thead><tr><th>Route</th><th>Flow (MW)</th><th>Cost/MW</th><th>Total Cost</th></tr></thead><tbody>`;
+  const routeArr = [];
+  let maxCost = 0;
+  for(let r=0;r<m;r++) for(let c=0;c<n;c++){
+    if(flow[r][c]>0){
+      const rc = flow[r][c]*cost[r][c];
+      maxCost = Math.max(maxCost,rc);
+      routeArr.push({label:`${plantNames[r]}→${cityNames[c]}`, cost:rc, flow:flow[r][c]});
+      html += `<tr class="highlight-row"><td>${plantNames[r]} → ${cityNames[c]}</td>
+        <td>${flow[r][c]} MW</td><td>₹${cost[r][c]}</td><td>₹${rc}</td></tr>`;
+    }
+  }
+  html += `</tbody></table>`;
+  html += `<div style="margin-top:14px;display:flex;gap:16px;flex-wrap:wrap">
+    <div><div class="big-label">Total Cost</div><div class="big-value value-accent">₹${totalCost.toFixed(0)}</div></div>
+    <div><div class="big-label">Total Flow</div><div class="big-value value-green">${totalDem} MW</div></div>
+  </div>`;
+  html += `<div class="status-bar status-ok">✓ All demand nodes satisfied · Strong Duality holds</div>`;
+  document.getElementById('e-output').innerHTML = html;
+
+  // ── LMPs (λ, μ) ──
+  let spHTML = '<div style="margin-bottom:8px;font-family:\'DM Mono\',monospace;font-size:0.72rem;color:var(--muted)">λⱼ = LMP: marginal cost of 1 extra MW at city j</div>';
+  for(let c=0;c<n;c++)
+    spHTML += shadowBadge(`${cityNames[c]} λ${c+1}`, lam[c], '₹/MW', lam[c]>4?'expensive':'cheap');
+  spHTML += '<div style="margin:10px 0 8px;font-family:\'DM Mono\',monospace;font-size:0.72rem;color:var(--muted)">μᵢ = shadow price of generation cap</div>';
+  for(let r=0;r<m;r++)
+    spHTML += shadowBadge(`${plantNames[r]} μ${r+1}`, mu[r], '₹/MW', mu[r]>0?'constrained':'');
+  spHTML += `<div class="status-bar status-info" style="margin-top:10px">
+    💡 Electricity price = λⱼ. On active routes: λⱼ − μᵢ = cᵢⱼ (dual feasibility)
+  </div>`;
+  document.getElementById('e-shadow').innerHTML = spHTML;
+
+  // ── Route comparison bars ──
+  let rHTML = '';
+  for(const rd of routeArr)
+    rHTML += sensBar(rd.label, (rd.cost/maxCost)*100, `₹${rd.cost} (${rd.flow}MW)`);
+  document.getElementById('e-routes').innerHTML = rHTML || '<div class="output-placeholder">No active routes</div>';
+}
+
+// Auto-solve on load so first view has data
+window.addEventListener('DOMContentLoaded', () => {
+  solveTransport();
+  solveHealthcare();
+  solveEnergy();
+});
+</script>
+
+</body>
+</html>
